@@ -14,9 +14,9 @@ def twice : (B → B) → B → B := iterate 2
 
 def goal : ∀ (f : B → B) (b : B) (n : Nat), iterate n (twice f) (f b) = f b := by
   intro f b n
-  induction' n
-  · case zero => simp [iterate]
-  · case succ n ih =>
+  induction n with
+  | zero => simp [iterate]
+  | succ n ih =>
       simp [iterate]; rw [ih]; clear ih
       simp [twice, iterate]
       cases b <;> cases hT : f B.T <;> cases hF : f B.F <;> grind

@@ -20,16 +20,16 @@ def MyRelation : Relation Nat := fun _ _ => False
 
 theorem strip  : ∀ {R : Relation T}, Diamond R → Commutes (Star R) R := by
   intro r d x y z s hxz
-  induction' s generalizing z
-  case rule x1 y1 h =>
+  induction s generalizing z with
+  | rule h =>
     have ⟨t, ht⟩ := d h hxz
     exact Exists.intro t (And.intro ht.1 (Star.rule ht.2))
-  case refl x1 =>
+  | refl =>
     use z
     constructor
-    · exact hxz
+    · grind
     · exact Star.refl
-  case trans x1 y1 z1 h1 h2 ih1 ih2 =>
+  | trans h1 h2 ih1 ih2 =>
     specialize ih1 hxz
     obtain ⟨t1, ht1⟩ := ih1
     specialize ih2 ht1.1
