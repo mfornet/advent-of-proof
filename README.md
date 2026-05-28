@@ -1,3 +1,3 @@
 # 2025-11-25-advent-of-proof-2023
 
-https://homepages.inf.ed.ac.uk/loconno/
+https://typesig.pl/2023/11/30/advent-of-proof.html
