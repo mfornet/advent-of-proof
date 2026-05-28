@@ -19,21 +19,7 @@ def goal : ∀ (f : B → B) (b : B) (n : Nat), iterate n (twice f) (f b) = f b 
   · case succ n ih =>
       simp [iterate]; rw [ih]; clear ih
       simp [twice, iterate]
+      cases b <;> cases hT : f B.T <;> cases hF : f B.F <;> grind
 
-      cases hb : b
-      · set ft := f B.T
-        cases ht : ft
-        · grind
-        · set ff := f B.F
-          cases hf : ff
-          · grind
-          · grind
-      · set ff := f B.F
-        cases ht : ff
-        · set ft := f B.T
-          cases hf : ft
-          · grind
-          · grind
-        · grind
 
 end Problem1
