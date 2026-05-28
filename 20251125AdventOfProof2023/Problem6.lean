@@ -1,5 +1,7 @@
 import Mathlib.Tactic
 
+namespace Problem6
+
 inductive Expr : Type where
 | Const : Nat → Expr
 | Plus  : Expr → Expr → Expr
@@ -54,3 +56,5 @@ theorem compile_correct_general : execute (compile e) stack = [ eval e ] ++ stac
 
 theorem compile_correct : execute (compile e) [] = [ eval e ] := by
   exact compile_correct_general
+
+end Problem6

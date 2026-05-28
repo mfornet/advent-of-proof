@@ -1,6 +1,8 @@
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.List.Range
 
+namespace Problem12
+
 structure DisjointPair (A : Type) : Type where
   fromV : A
   toV  : A
@@ -22,3 +24,5 @@ def MultiGraph.degree' (E : List (g.Edge)) (v : g.Vertex) : Nat := List.length (
 def MultiGraph.degree (v : g.Vertex) : Nat := g.degree' g.E v
 
 theorem handshaking : (List.map g.degree g.V).sum = 2 * g.E.length := by sorry
+
+end Problem12

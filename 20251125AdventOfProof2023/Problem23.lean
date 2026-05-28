@@ -1,4 +1,7 @@
 import Mathlib
+
+namespace Problem23
+
 def Assertion (State : Type) : Type := State → Prop
 
 def conjₐ (φ ψ : Assertion State) : Assertion State := fun σ => φ σ ∧ ψ σ
@@ -84,3 +87,5 @@ lemma loop : Triple (a3 A₀)
 
 theorem goal : Triple (fun σ => σ.A = A₀) prog (fun σ => σ.s = A₀.sum)
   := Triple.seqₕ (loop A₀) (Triple.seqₕ (Triple.conseqₕ (fun _ x => x) (by unfold a2 a3; intro s h; grind) (h2 A₀)) (h1 A₀))
+
+end Problem23

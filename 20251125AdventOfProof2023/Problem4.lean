@@ -1,5 +1,7 @@
 import Mathlib.Tactic
 
+namespace Problem4
+
 def Point : Type := Int × Int
 
 def up : Point → Point
@@ -94,3 +96,5 @@ theorem goal : ∀(path : OrthoPath p q), manhattan p q ≤ path_length path := 
   case stop p' =>
     rw [manhattan_zero]
     exact Nat.zero_le _
+
+end Problem4

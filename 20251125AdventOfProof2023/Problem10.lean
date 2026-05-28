@@ -1,3 +1,5 @@
+namespace Problem10
+
 axiom C : Type
 axiom st : C → C → C
 axiom op : C → C
@@ -54,3 +56,5 @@ theorem uniqueness (p1 : a ⋆ z ⋆ a = a) (p2 : z ⋆ a ⋆ z = z) : z = aᶜ 
 
 
   sorry
+
+end Problem10

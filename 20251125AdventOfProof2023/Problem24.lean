@@ -1,5 +1,7 @@
 import Mathlib.Tactic
 
+namespace Problem24
+
 -- Mathlib already has something called Tree
 inductive Tree' : Type where
 | leaf : Tree'
@@ -104,3 +106,5 @@ theorem toList_injective : toList n t = toList n t' → t = t' := by
   intro h
   suffices some t = some t' by grind
   rw [← toTree_inv_of_toList n t, ← toTree_inv_of_toList n t', h]
+
+end Problem24

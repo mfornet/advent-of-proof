@@ -1,3 +1,5 @@
+namespace Problem5
+
 inductive Symbol : Type where
 | O : Symbol
 | C : Symbol
@@ -22,3 +24,5 @@ def goal : M s → L s := by
 -- Lean's support for mutual induction is terrible!
 -- Serious bonus points for anyone who can prove this one:
 -- theorem goal : L s → M s := by sorry
+
+end Problem5

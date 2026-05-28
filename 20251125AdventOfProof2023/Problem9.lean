@@ -1,5 +1,7 @@
 import Mathlib.Tactic
 
+namespace Problem9
+
 class CorrectQueue {A: Type} (Q : Type) where
     abstraction : Q → List A
     enqueue     : A → Q → Q
@@ -45,3 +47,5 @@ instance {A : Type} : @CorrectQueue A (Queue A) where
     }
     size q := q.size_front + q.size_back
     empty := Queue.empty
+
+end Problem9

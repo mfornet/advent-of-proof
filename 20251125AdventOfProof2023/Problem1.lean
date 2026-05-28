@@ -1,5 +1,7 @@
 import Mathlib.Tactic
 
+namespace Problem1
+
 inductive B : Type
 | T : B
 | F : B
@@ -14,3 +16,5 @@ def twice : (B → B) → B → B := iterate 2
 
 def goal : ∀ (f : B → B) (b : B) (n : Nat), iterate n (twice f) (f b) = f b := by
   sorry
+
+end Problem1

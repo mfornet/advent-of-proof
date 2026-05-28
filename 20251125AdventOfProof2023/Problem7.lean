@@ -1,5 +1,7 @@
 import Mathlib.Tactic
 
+namespace Problem7
+
 axiom T : Type
 axiom f : T → T
 
@@ -75,3 +77,5 @@ theorem goal : Nat.repeat race n (x, x) = (c, c) → Loop n := by
   have hxc : Nat.repeat f n x = c := by exact h.1
   have hcc : Nat.repeat f n c = c := by rw [hxc] at h; exact h.2
   exact run_from_repeat hcc
+
+end Problem7

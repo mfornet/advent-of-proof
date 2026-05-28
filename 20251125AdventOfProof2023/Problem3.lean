@@ -1,5 +1,7 @@
 import Mathlib.Tactic
 
+namespace Problem3
+
 inductive subseq {A : Type} : List A → List A → Prop where
 | subseq_nil : subseq [] []
 | subseq_cons : ∀{xs ys}{x}, subseq xs ys → subseq (x :: xs) (x :: ys)
@@ -98,3 +100,5 @@ theorem subseq_antisym : ∀{A : Type} {xs ys : List A}, xs ⊑ ys → ys ⊑ xs
     case subseq_skip x' ys h =>
       exfalso
       exact not_subseq_of_cons_self (subseq_trans hyx h)
+
+end Problem3

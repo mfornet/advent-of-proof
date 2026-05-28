@@ -1,5 +1,13 @@
 import «20251125AdventOfProof2023».Problem1
-
-def hello := "world"
-
-#eval 10
+import «20251125AdventOfProof2023».Problem2
+import «20251125AdventOfProof2023».Problem3
+import «20251125AdventOfProof2023».Problem4
+import «20251125AdventOfProof2023».Problem5
+import «20251125AdventOfProof2023».Problem6
+import «20251125AdventOfProof2023».Problem7
+import «20251125AdventOfProof2023».Problem9
+import «20251125AdventOfProof2023».Problem10
+import «20251125AdventOfProof2023».Problem12
+import «20251125AdventOfProof2023».Problem16
+import «20251125AdventOfProof2023».Problem23
+import «20251125AdventOfProof2023».Problem24
