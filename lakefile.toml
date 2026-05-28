@@ -1,0 +1,11 @@
+name = "2025-11-25-advent-of-proof-2023"
+version = "0.1.0"
+defaultTargets = ["«20251125AdventOfProof2023»"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.30.0"
+
+[[lean_lib]]
+name = "«20251125AdventOfProof2023»"
