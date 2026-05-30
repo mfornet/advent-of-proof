@@ -19,48 +19,46 @@ lemma subseq_cons_spec {A : Type} {xs ys : List A} {x}:  xs ⊑ ys → x::xs ⊑
 
 lemma subseq_skip_rev {A : Type} {xs ys : List A} {x}:  x::xs ⊑ ys → xs ⊑ ys := by
   intro h
-  cases h
-  case subseq_cons ys h => exact subseq.subseq_skip h
-  case subseq_skip x' ys h =>
-    suffices xs ⊑ ys by exact subseq.subseq_skip this
-    exact subseq_skip_rev h
+  cases h with
+  | subseq_cons h => exact subseq.subseq_skip h
+  | subseq_skip h => exact subseq.subseq_skip (subseq_skip_rev h)
 
 lemma empty_subseq {A : Type} {xs : List A}: [] ⊑ xs := by
-  induction' xs
-  case nil => exact subseq.subseq_nil
-  case cons x xs ih => exact subseq.subseq_skip ih
+  induction xs with
+  | nil => exact subseq.subseq_nil
+  | cons x xs ih => exact subseq.subseq_skip ih
 
 lemma subseq_cons_rev {A : Type} {xs ys : List A} {x}:  x::xs ⊑ x::ys → xs ⊑ ys := by
   intro h
-  cases h
-  case subseq_cons h => exact h
-  case subseq_skip h => exact subseq_skip_rev h
+  cases h with
+  | subseq_cons h => exact h
+  | subseq_skip h => exact subseq_skip_rev h
 
 lemma subseq_empty : ∀{A : Type}{xs : List A}, [] ⊑ xs := by
   intro A xs
-  induction' xs
-  case nil => exact subseq.subseq_nil
-  case cons x xs ih => exact subseq.subseq_skip ih
+  induction xs with
+  | nil => exact subseq.subseq_nil
+  | cons x xs ih => exact subseq.subseq_skip ih
 
 lemma subseq_remove_second {A : Type} {xs ys : List A} {x y} : x :: y :: xs ⊑ ys → x :: xs ⊑ ys := by
   intro h
-  induction' ys generalizing x xs
-  case nil => contradiction
-  case cons y' ys ih =>
-    cases h
-    case subseq_cons h =>
+  induction ys generalizing x xs with
+  | nil => contradiction
+  | cons y' ys ih =>
+    cases h with
+    | subseq_cons h =>
       apply subseq.subseq_cons
       exact subseq_skip_rev h
-    case subseq_skip h =>
+    | subseq_skip h =>
       specialize ih h
       apply subseq.subseq_skip
       exact ih
 
 lemma not_subseq_of_cons_self {A : Type} {xs : List A} {x} : ¬x::xs ⊑ xs := by
   intro h
-  cases h
-  case subseq_cons xs h => exact not_subseq_of_cons_self h
-  case subseq_skip x' xs h => exact not_subseq_of_cons_self (subseq_remove_second h)
+  cases h with
+  | subseq_cons h => exact not_subseq_of_cons_self h
+  | subseq_skip h => exact not_subseq_of_cons_self (subseq_remove_second h)
 
 theorem subseq_trans : ∀{A : Type}{xs ys zs : List A}, xs ⊑ ys → ys ⊑ zs → xs ⊑ zs := by
   intro A xs ys zs hxy hyz
