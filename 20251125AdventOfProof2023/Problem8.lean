@@ -8,9 +8,8 @@ inductive CompressedString : Nat → Type where
 | cons  : (n : Nat) → CompressedString (Nat.succ m) → CompressedString (Nat.succ (Nat.succ (m + n)))
 
 def head_c : CompressedString (Nat.succ n) → Bool
-| .one x n => x
-| .cons _ str => not (head_c str)
-
+| .one x _ => x
+| .cons _ str => !head_c str
 
 def tail_c : CompressedString (Nat.succ n) → CompressedString n
 | .one x c => match c with
@@ -42,28 +41,15 @@ lemma cons_c_exists_zero (str : CompressedString (n + 1)) : cons_c (!head_c str)
   | @cons n n' str => simp [cons_c]
 
 @[simp]
-lemma cons_c_exists_succ (str : CompressedString (n + 1)) : cons_c (!head_c str) (.cons m str) = .cons (m + 1) str := by
+lemma cons_c_exists_succ (str : CompressedString (n + 1)) :
+    cons_c (!head_c str) (.cons m str) = .cons (m + 1) str := by
   cases str with
   | one b => simp [cons_c, head_c]
   | @cons n n' str => simp [cons_c, head_c]
 
 @[simp]
 lemma head_cons_c (str : CompressedString n) : head_c (cons_c x str) = x := by
-  simp [cons_c]
-  split
-  case h_1 n x' str => grind [head_c]
-  case h_2 str x' n =>
-    split
-    case isTrue => grind [head_c];
-    case isFalse _ _ h => simp [head_c]; exact Bool.eq_not.mpr fun a => h (id (Eq.symm a))
-  case h_3 n _ str₁ n₁ n₂ str₂ =>
-    split
-    case isTrue _ h =>
-      rw [h]
-      simp [head_c]
-    case isFalse _ h =>
-      simp [head_c] at *
-      grind
+  cases x <;> cases str <;> simp only [cons_c] <;> (try split) <;> simp_all [head_c]
 
 @[simp]
 lemma tail_cons_c (str : CompressedString n) : tail_c (cons_c x str) = str := by
@@ -85,8 +71,6 @@ lemma tail_cons_c (str : CompressedString n) : tail_c (cons_c x str) = str := by
       simp [cons_c, head_c]
       grind [tail_cons, tail_cons_0]
 
-
-@[simp]
 def compress : {n : Nat} → List.Vector Bool n → CompressedString n
 | .zero , _ => .empty
 | .succ _ , v => cons_c (List.Vector.head v) (compress (List.Vector.tail v))
@@ -94,7 +78,6 @@ def compress : {n : Nat} → List.Vector Bool n → CompressedString n
 lemma compress_cons (t : List.Vector Bool n): compress (x ::ᵥ t) = cons_c x (compress t) := by
   rfl
 
-@[simp]
 def decompress : ∀ {n}, CompressedString n → List.Vector Bool n
 | .zero, .empty => .nil
 | .succ _, str => (head_c str) ::ᵥ decompress (tail_c str)
@@ -103,29 +86,23 @@ def decompress : ∀ {n}, CompressedString n → List.Vector Bool n
 lemma decompress_cons (v : CompressedString (n + 1)): decompress v = head_c v ::ᵥ decompress (tail_c v) := by
   rfl
 
-theorem prf₁ : ∀{n} (xs : CompressedString n), compress (decompress xs) = xs  := by
-  intro n xs
-  induction xs with
-  | empty => simp
-  | one a n₁ =>
-    induction n₁ with
-    | zero => simp [head_c, cons_c]
-    | succ n₁ h =>
-      rw [decompress_cons]
-      simp only [head_c]
-      rw [compress_cons]
-      simp only [tail_c]
-      rw [h]
-      simp [cons_c]
-  | @cons n' m' str ih =>
-    induction m' with
-    | zero => rw [← cons_c_exists_zero str, decompress_cons, head_cons_c, compress_cons, tail_cons_c str, ih]
-    | succ m' ih' => rw [← cons_c_exists_succ str, decompress_cons, head_cons_c, tail_cons_c, compress_cons, ih']
+/-- Rebuilding a non-empty string from its head and tail recovers it.
+This is the dual of `head_cons_c`/`tail_cons_c`, and the key to `prf₁`. -/
+lemma cons_head_tail : ∀ {n} (str : CompressedString (n + 1)),
+    cons_c (head_c str) (tail_c str) = str
+  | _, .one x n     => by cases n <;> simp [head_c, tail_c, cons_c]
+  | _, .cons c rest => by cases c <;> simp [head_c]
+
+theorem prf₁ : ∀ {n} (xs : CompressedString n), compress (decompress xs) = xs := by
+  intro n
+  induction n with
+  | zero => intro xs; cases xs; rfl
+  | succ n ih => intro xs; rw [decompress_cons, compress_cons, ih, cons_head_tail]
 
 theorem prf₂ : ∀{n} (xs : List.Vector Bool n), decompress (compress xs) = xs := by
   intro n xs
   induction xs with
-  | nil => simp
+  | nil => rfl
   | @cons n' x xs h =>
     rw [compress_cons, decompress_cons, head_cons_c, tail_cons_c, h]
 
