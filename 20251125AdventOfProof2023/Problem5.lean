@@ -42,31 +42,28 @@ def M_split (s : List Symbol) (h : s.length ≠ 0) (x : M s) :
     expose_names
     exact ⟨a, [], x_1, M.empty, by grind⟩
 
-def goal : M s → L s := by
+def goal  : M s → L s := by
   intro seq
-  cases seq with
-  | empty => exact ListOf.empty
-  | juxt x y =>
-    expose_names
-    by_cases h : a.length = 0
-    · have ha : a = [] := by grind
-      rw [ha]; simp
-      exact goal y
-    · have ⟨a', b', ma, mb, heq⟩ := M_split a h x
-      rw [heq, List.append_assoc]
-      apply ListOf.cons
-      · exact N.nest (goal ma)
-      · have tail := mb.juxt y
-        exact goal tail
-  | nest x =>
-    expose_names
-    have t := ListOf.cons (N.nest (goal x)) ListOf.empty
-    simp at t
-    simp
-    exact t
+  by_cases h : s.length = 0
+  · -- empty word
+    have hnil : s = [] := by grind
+    rw [hnil]
+    exact ListOf.empty
+  · -- nonempty: split off the first balanced block `[O] a [C]` and the rest `b`
+    have ⟨a, b, ma, mb, heq⟩ := M_split s h seq
+    rw [heq]
+    exact ListOf.cons (N.nest (goal ma)) (goal mb)
+termination_by s.length
+decreasing_by
+  · subst heq; simp [List.length_append]
+  · subst heq; simp [List.length_append]; omega
 
--- Lean's support for mutual induction is terrible!
--- Serious bonus points for anyone who can prove this one:
--- theorem goal : L s → M s := by sorry
+def goal₂ : {s : List Symbol} → L s → M s
+  | _, ListOf.empty => M.empty
+  | _, ListOf.cons (N.nest inner) rest => M.juxt (M.nest (goal₂ inner)) (goal₂ rest)
+termination_by s _ => s.length
+decreasing_by
+  all_goals simp_wf
+  all_goals omega
 
 end Problem5
