@@ -49,6 +49,38 @@ def sizeQ ( q : Queue A) : Nat := q.size_front + q.size_back
 
 def emptyQ : Queue A := Queue.mk 0 0 [] [] (by linarith) (by trivial) (by trivial)
 
-def goal : CorrectQueue Queue := by sorry
+lemma front_empty_tail_empty (q : Queue A) (h : q.front = []) : q.back = [] := by
+    have hi := q.invariant
+    rw [← q.size_inv₁, ← q.size_inv₂, h] at hi
+    simp at hi
+    assumption
+
+def goal : CorrectQueue Queue := {
+    abstraction := λ q => q.front ++ List.reverse q.back,
+    enqueue     := enqueueQ,
+    dequeue     := dequeueQ,
+    first       := firstQ,
+    size        := sizeQ,
+    empty       := emptyQ,
+
+    emptyᵣ      := by simp [emptyQ],
+    sizeᵣ       := by intro A q; simp [sizeQ]; rw [q.size_inv₁, q.size_inv₂]
+    firstᵣ      := by
+        intro A q
+        simp [firstQ]
+        cases h : q.front with
+        | nil => simp [front_empty_tail_empty q h]
+        | cons x _ => simp
+    dequeueᵣ    := by
+        intro A q
+        simp [dequeueQ]
+        split
+        case h_1 x heq => simp [front_empty_tail_empty q heq]; grind
+        case h_2 => grind
+    enqueueᵣ    := by
+        intro A q x
+        simp [enqueueQ]
+        split <;> simp
+}
 
 end Problem9
