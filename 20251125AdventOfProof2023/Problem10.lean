@@ -1,3 +1,5 @@
+import Mathlib.Tactic
+
 namespace Problem10
 
 axiom C : Type
@@ -7,6 +9,7 @@ axiom op : C → C
 infixl:65 " ⋆ " => st
 postfix:max "ᵒ" => op
 
+@[simp]
 axiom assoc : ∀ a b c, a ⋆ (b ⋆ c) = (a ⋆ b) ⋆ c
 axiom op_prop : ∀ a, a ⋆ aᵒ ⋆ a = a
 
@@ -35,26 +38,20 @@ theorem prop₂ : ∀ a, aᶜ ⋆ a ⋆ aᶜ = aᶜ
 
 axiom commute : ∀ a b, a ⋆ a = a → b ⋆ b = b → a ⋆ b = b ⋆ a
 
--- a ⋆ aᵒ commutes
--- a ⋆ aᶜ commutes
--- aᵒ ⋆ a commutes
--- aᶜ ⋆ a commutes
-
-theorem t (n : Nat) : 0 + n = n + 0 :=
-  of_eq_true
-    (Eq.trans
-      (congrFun' (congrArg Eq (Nat.zero_add n)) n)
-      (eq_self n)
-    )
-
-def myadd (a : Nat) : Nat -> Nat -> Nat
-  | 0, _ => a
-  | Nat.succ n, _ => Nat.succ (myadd a n 0)
-
+lemma ab_idem (p1 : a ⋆ b ⋆ a = a): a ⋆ b ⋆ (a ⋆ b) = a ⋆ b := by simp; rw [p1]
 
 theorem uniqueness (p1 : a ⋆ z ⋆ a = a) (p2 : z ⋆ a ⋆ z = z) : z = aᶜ := by
-
-
-  sorry
+  calc z = z ⋆ a ⋆ z := by grind
+       _ = z ⋆ a ⋆ aᶜ ⋆ a ⋆ z := by nth_rewrite 1 [← prop₁ a]; simp
+       _ = (z ⋆ a) ⋆ (aᶜ ⋆ a) ⋆ z := by simp
+       _ = (aᶜ ⋆ a) ⋆ (z ⋆ a) ⋆ z := by rw [commute (aᶜ ⋆ a) (z ⋆ a) (ab_idem (prop₂ a)) (ab_idem p2)]
+       _ = aᶜ ⋆ a ⋆ (z ⋆ a ⋆ z) := by simp
+       _ = aᶜ ⋆ a ⋆ z := by rw [p2]
+       _ = aᶜ ⋆ a ⋆ aᶜ ⋆ a ⋆ z := by nth_rewrite 1 [← prop₂ a]; simp
+       _ = aᶜ ⋆ ((a ⋆ aᶜ) ⋆ (a ⋆ z)) := by simp
+       _ = aᶜ ⋆ ((a ⋆ z) ⋆ (a ⋆ aᶜ)) := by rw [commute (a ⋆ aᶜ) (a ⋆ z) (ab_idem (prop₁ a)) (ab_idem p1)]
+       _ = aᶜ ⋆ (a ⋆ z ⋆ a) ⋆ aᶜ := by simp
+        _ = aᶜ ⋆ a ⋆ aᶜ := by rw [p1]
+       _ = aᶜ := by rw [prop₂ a]
 
 end Problem10
