@@ -1,5 +1,6 @@
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.List.Range
+import Mathlib.Algebra.BigOperators.Group.List.Basic
 
 namespace Problem12
 
@@ -23,6 +24,24 @@ def MultiGraph.connects (v : g.Vertex)(e : g.Edge) : Bool := Decidable.decide (e
 def MultiGraph.degree' (E : List (g.Edge)) (v : g.Vertex) : Nat := List.length (List.filter (g.connects v) E)
 def MultiGraph.degree (v : g.Vertex) : Nat := g.degree' g.E v
 
-theorem handshaking : (List.map g.degree g.V).sum = 2 * g.E.length := by sorry
+-- An edge with a direction, true means it goes in the direction [fromV -> toV] and false otherwise.
+abbrev directedEdge := DisjointPair (g.Vertex) × Bool
+
+-- set_option trace.Meta.synthInstance true
+-- All edges that are directed out of a vertex v
+def outEdges (v : g.Vertex) : Set (directedEdge g) :=
+  { x | x.1 ∈ g.E ∧ (x.2 = true → x.1.fromV = v) ∧ (x.2 = false → x.1.toV = v) }
+
+theorem handshaking : (List.map g.degree g.V).sum = 2 * g.E.length := by
+  sorry
+
+structure SortingSpec where
+  sort : List Nat → List Nat
+  sort_perm : ∀ l, List.Perm (sort l) l
+  -- sort_sorted : ∀ l, List.sorted (· ≤ ·) (sort l)
+
+def unique (f : SortingSpec) (l : List Nat) :=
+  (f.sort l).eraseDups
+
 
 end Problem12
