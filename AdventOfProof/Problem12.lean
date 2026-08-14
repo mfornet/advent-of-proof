@@ -35,13 +35,4 @@ def outEdges (v : g.Vertex) : Set (directedEdge g) :=
 theorem handshaking : (List.map g.degree g.V).sum = 2 * g.E.length := by
   sorry
 
-structure SortingSpec where
-  sort : List Nat → List Nat
-  sort_perm : ∀ l, List.Perm (sort l) l
-  -- sort_sorted : ∀ l, List.sorted (· ≤ ·) (sort l)
-
-def unique (f : SortingSpec) (l : List Nat) :=
-  (f.sort l).eraseDups
-
-
 end Problem12
