@@ -1,3 +1,5 @@
+namespace Problem11
+
 inductive Term : Type where
 | Ref : Term
 | Sop : Term
@@ -59,3 +61,5 @@ theorem beta : .App (lambda M) N ↦ substitution M N := by
   | Sop => exact red_K .red_rfl
   | Kop => exact red_K .red_rfl
   | App M₁ M₂ ih₁ ih₂ => exact red_S (red_left ih₁ ih₂)
+
+end Problem11
