@@ -43,10 +43,39 @@ instance nullable : (r : Regex) → Decidable (Nullable r)
 | r ⊎ s => by have x := nullable r; have y := nullable s; apply instDecidableOr;
 | r ▹ s => by have x := nullable r; have y := nullable s; apply instDecidableAnd;
 
-theorem nullable_correct₁ : Nullable R → Matches R []
-  := by sorry
-theorem nullable_correct₂ : Matches R [] → Nullable R
-  := by sorry
+theorem nullable_correct₁ : Nullable R → Matches R [] := by
+  intro null
+  induction R with
+  | fail => simp at null
+  | ε => exact Matches.empty
+  | char a => simp at null
+  | comp a b ah bh =>
+    obtain ⟨na, nb⟩ := null
+    exact Matches.comp (ah na) (bh nb)
+  | union a b ah bh =>
+    cases null with
+    | inl null => exact Matches.un₁ (ah null)
+    | inr null => exact Matches.un₂ (bh null)
+  | star => exact Matches.starₑ
+
+
+theorem nullable_correct₂ : Matches R [] → Nullable R := by
+  intro m
+  induction R with
+  | fail => cases m
+  | ε => simp
+  | char c => cases m
+  | comp a b ah bh =>
+    generalize hs : ([] : List Char) = xs at m
+    cases m with
+    | @comp _ sa _ sb ma mb =>
+      have ha : sa = [] := by sorry
+      have hb : sb = [] := by sorry
+      rw [ha] at ma
+      rw [hb] at mb
+      exact ⟨ah ma, bh mb⟩
+  | union a b ah bh=> sorry
+  | star a ah => sorry
 
 @[simp]
 def step : Regex → Char → Regex
@@ -56,6 +85,7 @@ def step : Regex → Char → Regex
 | r ▹ s , c => if Nullable r then (step r c ▹ s) ⊎ (step s c) else step r c ▹ s
 | r ⊎ s , c => step r c ⊎ step s c
 | r ⋆   , c => step r c ▹ (r ⋆)
+
 @[simp]
 def steps (R : Regex) : List Char → Regex
 | x :: xs => steps (step R x) xs
@@ -75,6 +105,7 @@ theorem steps_correct₂ : Matches R s → Matches (steps R s) []
 
 lemma check_lemma₁ (n : Nullable (steps R s)) : Matches R s
   := by sorry
+
 lemma check_lemma₂ (m : Matches R s) : Nullable (steps R s)
   := by sorry
 
