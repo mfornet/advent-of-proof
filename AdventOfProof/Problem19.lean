@@ -207,11 +207,15 @@ theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
     rw [hsst]; clear hsst
     exact Matches.comp (step_correct₂ hs') ht'
 
-theorem steps_correct₁ : Matches (steps R s) [] → Matches R s
-  := by sorry
+theorem steps_correct₁ : Matches (steps R s) [] → Matches R s := by
+  induction s generalizing R with
+  | nil => simp
+  | cons head t ht => exact fun h => step_correct₁ (ht h)
 
-theorem steps_correct₂ : Matches R s → Matches (steps R s) []
-  := by sorry
+theorem steps_correct₂ : Matches R s → Matches (steps R s) [] := by
+  induction s generalizing R with
+  | nil => simp
+  | cons head t ht => exact fun h => ht (step_correct₂ h)
 
 lemma check_lemma₁ (n : Nullable (steps R s)) : Matches R s := by
   exact steps_correct₁ (nullable_correct₁ n)
