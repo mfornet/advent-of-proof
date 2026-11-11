@@ -26,6 +26,22 @@ inductive Matches : Regex → List Char → Prop where
 | starₑ : Matches (R⋆) []
 | starₛ : Matches R s → Matches (R⋆) t → Matches (R⋆) (s ++ t)
 
+lemma starₛ_nempty (h : Matches (R⋆) (c :: s)) :
+  ∃ a b, Matches R (c :: a) ∧ Matches (R⋆) b ∧ (c :: s = c :: a ++ b) := by
+  generalize hx : c :: s = xs at h
+  generalize hR : R⋆ = R' at h
+  induction h generalizing s R with
+  | empty => contradiction
+  | char => contradiction
+  | comp => contradiction
+  | un₁ => contradiction
+  | un₂ => contradiction
+  | starₑ => contradiction
+  | @starₛ R'' u v hu hv hiu hiv =>
+    cases u with
+    | nil => grind
+    | cons => grind
+
 @[simp]
 def Nullable : Regex → Prop
 | .fail => False
@@ -186,24 +202,10 @@ theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
     | un₁ h => exact Matches.un₁ (step_correct₂ h)
     | un₂ h => exact Matches.un₂ (step_correct₂ h)
   | star R =>
-    generalize hx : c :: s = xs at h
-    cases h with
-    | starₑ => contradiction
-    | @starₛ _ s' t' hs' ht' =>
-      cases s' with
-      | nil =>
-        simp at hx
-        rw [← hx] at ht'
-        exact step_correct₂ ht'
-      | cons c' s' =>
-        have tmp : c' :: s' ++ t' = c' :: (s' ++ t') := by grind
-        rw [tmp] at hx; clear tmp
-        have cc' : c' = c := by grind
-        rw [cc'] at hx hs'; clear cc'
-        simp
-        have hsst : s = s' ++ t' := by grind
-        rw [hsst]; clear hsst
-        exact Matches.comp (step_correct₂ hs') ht'
+    obtain ⟨s', t', hs', ht', _⟩ := starₛ_nempty h
+    have hsst : s = s' ++ t' := by grind
+    rw [hsst]; clear hsst
+    exact Matches.comp (step_correct₂ hs') ht'
 
 theorem steps_correct₁ : Matches (steps R s) [] → Matches R s
   := by sorry
