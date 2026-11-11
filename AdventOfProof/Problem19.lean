@@ -141,7 +141,69 @@ theorem step_correct₁ : Matches (step R c) s → Matches R (c :: s) := by
       exact Matches.starₛ (step_correct₁ hs) ht
 
 theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
-  sorry
+  intro h
+  cases R with
+  | fail => cases h
+  | ε => cases h
+  | char c₁ =>
+    by_cases h₁ : c = c₁
+    · simp [h₁] at *
+      cases h
+      exact Matches.empty
+    · cases h
+      contradiction
+  | comp hs ht =>
+    generalize hi : c :: s = xs at h
+    cases h with
+    | @comp _ s' _ t' hs' ht' =>
+      cases s' with
+      | nil =>
+        simp at hi
+        have tmp := nullable_correct₂ hs'
+        simp [tmp]
+        apply Matches.un₂
+        rw [← hi] at ht'
+        exact step_correct₂ ht'
+      | cons c' s' =>
+        have tmp : c' :: s' ++ t' = c' :: (s' ++ t') := by grind
+        rw [tmp] at hi; clear tmp
+        have cc' : c' = c := by grind
+        rw [cc'] at hi hs'; clear cc'
+        simp
+        suffices Matches (step hs c ▹ ht) s by
+          by_cases h1 : Nullable hs
+          · simp [h1]
+            exact Matches.un₁ this
+          · simp [h1]
+            exact this
+        have hsst : s = s' ++ t' := by grind
+        rw [hsst]; clear hsst
+        apply Matches.comp
+        · exact step_correct₂ hs'
+        · exact ht'
+  | union P Q =>
+    cases h with
+    | un₁ h => exact Matches.un₁ (step_correct₂ h)
+    | un₂ h => exact Matches.un₂ (step_correct₂ h)
+  | star R =>
+    generalize hx : c :: s = xs at h
+    cases h with
+    | starₑ => contradiction
+    | @starₛ _ s' t' hs' ht' =>
+      cases s' with
+      | nil =>
+        simp at hx
+        rw [← hx] at ht'
+        exact step_correct₂ ht'
+      | cons c' s' =>
+        have tmp : c' :: s' ++ t' = c' :: (s' ++ t') := by grind
+        rw [tmp] at hx; clear tmp
+        have cc' : c' = c := by grind
+        rw [cc'] at hx hs'; clear cc'
+        simp
+        have hsst : s = s' ++ t' := by grind
+        rw [hsst]; clear hsst
+        exact Matches.comp (step_correct₂ hs') ht'
 
 theorem steps_correct₁ : Matches (steps R s) [] → Matches R s
   := by sorry
