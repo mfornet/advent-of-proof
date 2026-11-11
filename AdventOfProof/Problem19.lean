@@ -58,7 +58,6 @@ theorem nullable_correct₁ : Nullable R → Matches R [] := by
     | inr null => exact Matches.un₂ (bh null)
   | star => exact Matches.starₑ
 
-
 theorem nullable_correct₂ : Matches R [] → Nullable R := by
   intro m
   induction R with
@@ -67,15 +66,20 @@ theorem nullable_correct₂ : Matches R [] → Nullable R := by
   | char c => cases m
   | comp a b ah bh =>
     generalize hs : ([] : List Char) = xs at m
+    symm at hs
     cases m with
     | @comp _ sa _ sb ma mb =>
-      have ha : sa = [] := by sorry
-      have hb : sb = [] := by sorry
-      rw [ha] at ma
-      rw [hb] at mb
+      rw [List.append_eq_nil_iff] at hs
+      rw [hs.1] at ma
+      rw [hs.2] at mb
       exact ⟨ah ma, bh mb⟩
-  | union a b ah bh=> sorry
-  | star a ah => sorry
+  | union a b ah bh =>
+    simp
+    cases m with
+    | un₁ h => grind
+    | un₂ h => grind
+  | star a ah =>
+    trivial
 
 @[simp]
 def step : Regex → Char → Regex
@@ -91,11 +95,53 @@ def steps (R : Regex) : List Char → Regex
 | x :: xs => steps (step R x) xs
 | [] => R
 
-theorem step_correct₁ : Matches (step R c) s → Matches R (c :: s)
-  := by sorry
+theorem step_correct₁ : Matches (step R c) s → Matches R (c :: s) := by
+  intro h
+  cases R with
+  | fail => cases h
+  | ε => cases h
+  | char c₁ =>
+    simp at h
+    by_cases h₁ : c = c₁
+    · simp [h₁] at *
+      cases h with
+      | empty => exact Matches.char
+    · simp [h₁] at *
+      cases h
+  | comp x y =>
+    simp at h
+    by_cases h₁ : Nullable x
+    · simp [h₁] at h
+      cases h with
+      | un₁ h =>
+        cases h with
+        | @comp _ s _ t hs ht =>
+          have tmp : c :: (s ++ t) = (c :: s) ++ t := by grind
+          rw [tmp]
+          exact Matches.comp (step_correct₁ hs) ht
+      | un₂ h =>
+        have tmp : c :: s = [] ++ (c :: s) := by simp
+        rw [tmp]
+        exact Matches.comp (nullable_correct₁ h₁) (step_correct₁ h)
+    · simp [h₁] at *
+      cases h with
+      | @comp _ s _ t hs ht =>
+        have tmp : c :: (s ++ t) = (c :: s) ++ t := by grind
+        rw [tmp]
+        exact Matches.comp (step_correct₁ hs) ht
+  | union x y =>
+    cases h with
+    | un₁ h => exact Matches.un₁ (step_correct₁ h)
+    | un₂ h => exact Matches.un₂ (step_correct₁ h)
+  | star x =>
+    cases h with
+    | @comp _ s _ t hs ht =>
+      have tmp : c :: (s ++ t) = (c :: s) ++ t := by grind
+      rw [tmp]
+      exact Matches.starₛ (step_correct₁ hs) ht
 
-theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s
-  := by sorry
+theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
+  sorry
 
 theorem steps_correct₁ : Matches (steps R s) [] → Matches R s
   := by sorry
@@ -103,11 +149,11 @@ theorem steps_correct₁ : Matches (steps R s) [] → Matches R s
 theorem steps_correct₂ : Matches R s → Matches (steps R s) []
   := by sorry
 
-lemma check_lemma₁ (n : Nullable (steps R s)) : Matches R s
-  := by sorry
+lemma check_lemma₁ (n : Nullable (steps R s)) : Matches R s := by
+  exact steps_correct₁ (nullable_correct₁ n)
 
-lemma check_lemma₂ (m : Matches R s) : Nullable (steps R s)
-  := by sorry
+lemma check_lemma₂ (m : Matches R s) : Nullable (steps R s) := by
+  exact nullable_correct₂ (steps_correct₂ m)
 
 instance check (R : Regex) (s : List Char) : Decidable (Matches R s) :=
   if p : Nullable (steps R s)
