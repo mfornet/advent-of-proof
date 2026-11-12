@@ -105,11 +105,10 @@ def steps (R : Regex) : List Char → Regex
 | [] => R
 
 theorem step_correct₁ : Matches (step R c) s → Matches R (c :: s) := by
-  intro h
-  cases R with
-  | fail => cases h
-  | ε => cases h
+  induction R generalizing s with
+  | fail | ε => intro h; cases h
   | char c₁ =>
+    intro h
     simp at h
     by_cases h₁ : c = c₁
     · simp [h₁] at h ⊢
@@ -117,7 +116,8 @@ theorem step_correct₁ : Matches (step R c) s → Matches R (c :: s) := by
       | empty => exact Matches.char
     · simp [h₁] at h ⊢
       cases h
-  | comp x y =>
+  | comp x y ihx ihy =>
+    intro h
     simp at h
     by_cases h₁ : Nullable x
     · simp [h₁] at h
@@ -125,35 +125,37 @@ theorem step_correct₁ : Matches (step R c) s → Matches R (c :: s) := by
       | un₁ h =>
         cases h with
         | @comp _ s _ t hs ht =>
-          exact Matches.comp (step_correct₁ hs) ht
+          exact Matches.comp (ihx hs) ht
       | un₂ h =>
-        exact Matches.comp (nullable_correct₁ h₁) (step_correct₁ h)
+        exact Matches.comp (nullable_correct₁ h₁) (ihy h)
     · simp [h₁] at h ⊢
       cases h with
       | @comp _ s _ t hs ht =>
-        exact Matches.comp (step_correct₁ hs) ht
-  | union x y =>
+        exact Matches.comp (ihx hs) ht
+  | union x y ihx ihy =>
+    intro h
     cases h with
-    | un₁ h => exact Matches.un₁ (step_correct₁ h)
-    | un₂ h => exact Matches.un₂ (step_correct₁ h)
-  | star x =>
+    | un₁ h => exact Matches.un₁ (ihx h)
+    | un₂ h => exact Matches.un₂ (ihy h)
+  | star x ihx =>
+    intro h
     cases h with
     | @comp _ s _ t hs ht =>
-      exact Matches.starₛ (step_correct₁ hs) ht
+      exact Matches.starₛ (ihx hs) ht
 
 theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
-  intro h
-  cases R with
-  | fail => cases h
-  | ε => cases h
+  induction R generalizing s with
+  | fail | ε => intro h; cases h
   | char c₁ =>
+    intro h
     by_cases h₁ : c = c₁
     · simp [h₁] at h ⊢
       cases h
       exact Matches.empty
     · cases h
       contradiction
-  | comp hs ht =>
+  | comp x y ihx ihy =>
+    intro h
     generalize hi : c :: s = xs at h
     cases h with
     | @comp _ s' _ t' hs' ht' =>
@@ -164,12 +166,12 @@ theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
         simp [tmp]
         apply Matches.un₂
         rw [← hi] at ht'
-        exact step_correct₂ ht'
+        exact ihy ht'
       | cons c' s' =>
         obtain rfl : c = c' := by grind
         simp
-        suffices Matches (step hs c ▹ ht) s by
-          by_cases h1 : Nullable hs
+        suffices Matches (step x c ▹ y) s by
+          by_cases h1 : Nullable x
           · simp [h1]
             exact Matches.un₁ this
           · simp [h1]
@@ -177,16 +179,18 @@ theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
         have hsst : s = s' ++ t' := by grind
         rw [hsst]; clear hsst
         apply Matches.comp
-        · exact step_correct₂ hs'
+        · exact ihx hs'
         · exact ht'
-  | union P Q =>
+  | union P Q ihP ihQ =>
+    intro h
     cases h with
-    | un₁ h => exact Matches.un₁ (step_correct₂ h)
-    | un₂ h => exact Matches.un₂ (step_correct₂ h)
-  | star R =>
+    | un₁ h => exact Matches.un₁ (ihP h)
+    | un₂ h => exact Matches.un₂ (ihQ h)
+  | star x ihx =>
+    intro h
     obtain ⟨s', t', hs', ht', r⟩ := starₛ_nempty h
     rw [r]
-    exact Matches.comp (step_correct₂ hs') ht'
+    exact Matches.comp (ihx hs') ht'
 
 theorem steps_correct₁ : Matches (steps R s) [] → Matches R s := by
   induction s generalizing R with
