@@ -27,20 +27,15 @@ inductive Matches : Regex → List Char → Prop where
 | starₛ : Matches R s → Matches (R⋆) t → Matches (R⋆) (s ++ t)
 
 lemma starₛ_nempty (h : Matches (R⋆) (c :: s)) :
-  ∃ a b, Matches R (c :: a) ∧ Matches (R⋆) b ∧ (c :: s = c :: a ++ b) := by
+  ∃ a b, Matches R (c :: a) ∧ Matches (R⋆) b ∧ (s = a ++ b) := by
   generalize hx : c :: s = xs at h
   generalize hR : R⋆ = R' at h
   induction h generalizing s R with
-  | empty => contradiction
-  | char => contradiction
-  | comp => contradiction
-  | un₁ => contradiction
-  | un₂ => contradiction
-  | starₑ => contradiction
   | @starₛ R'' u v hu hv hiu hiv =>
     cases u with
     | nil => grind
     | cons => grind
+  | _ => contradiction
 
 @[simp]
 def Nullable : Regex → Prop
@@ -56,8 +51,8 @@ instance nullable : (r : Regex) → Decidable (Nullable r)
 | .ε    => isTrue (by simp)
 | [ _ ] => isFalse (by simp)
 | r ⋆   => isTrue (by simp)
-| r ⊎ s => by have x := nullable r; have y := nullable s; apply instDecidableOr;
-| r ▹ s => by have x := nullable r; have y := nullable s; apply instDecidableAnd;
+| r ▹ s => @instDecidableAnd _ _ (nullable r) (nullable s)
+| r ⊎ s => @instDecidableOr _ _ (nullable r) (nullable s)
 
 theorem nullable_correct₁ : Nullable R → Matches R [] := by
   intro null
@@ -85,9 +80,7 @@ theorem nullable_correct₂ : Matches R [] → Nullable R := by
     symm at hs
     cases m with
     | @comp _ sa _ sb ma mb =>
-      rw [List.append_eq_nil_iff] at hs
-      rw [hs.1] at ma
-      rw [hs.2] at mb
+      obtain ⟨rfl, rfl⟩ := List.append_eq_nil_iff.mp hs
       exact ⟨ah ma, bh mb⟩
   | union a b ah bh =>
     simp
@@ -119,10 +112,10 @@ theorem step_correct₁ : Matches (step R c) s → Matches R (c :: s) := by
   | char c₁ =>
     simp at h
     by_cases h₁ : c = c₁
-    · simp [h₁] at *
+    · simp [h₁] at h ⊢
       cases h with
       | empty => exact Matches.char
-    · simp [h₁] at *
+    · simp [h₁] at h ⊢
       cases h
   | comp x y =>
     simp at h
@@ -132,18 +125,12 @@ theorem step_correct₁ : Matches (step R c) s → Matches R (c :: s) := by
       | un₁ h =>
         cases h with
         | @comp _ s _ t hs ht =>
-          have tmp : c :: (s ++ t) = (c :: s) ++ t := by grind
-          rw [tmp]
           exact Matches.comp (step_correct₁ hs) ht
       | un₂ h =>
-        have tmp : c :: s = [] ++ (c :: s) := by simp
-        rw [tmp]
         exact Matches.comp (nullable_correct₁ h₁) (step_correct₁ h)
-    · simp [h₁] at *
+    · simp [h₁] at h ⊢
       cases h with
       | @comp _ s _ t hs ht =>
-        have tmp : c :: (s ++ t) = (c :: s) ++ t := by grind
-        rw [tmp]
         exact Matches.comp (step_correct₁ hs) ht
   | union x y =>
     cases h with
@@ -152,8 +139,6 @@ theorem step_correct₁ : Matches (step R c) s → Matches R (c :: s) := by
   | star x =>
     cases h with
     | @comp _ s _ t hs ht =>
-      have tmp : c :: (s ++ t) = (c :: s) ++ t := by grind
-      rw [tmp]
       exact Matches.starₛ (step_correct₁ hs) ht
 
 theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
@@ -163,7 +148,7 @@ theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
   | ε => cases h
   | char c₁ =>
     by_cases h₁ : c = c₁
-    · simp [h₁] at *
+    · simp [h₁] at h ⊢
       cases h
       exact Matches.empty
     · cases h
@@ -181,10 +166,7 @@ theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
         rw [← hi] at ht'
         exact step_correct₂ ht'
       | cons c' s' =>
-        have tmp : c' :: s' ++ t' = c' :: (s' ++ t') := by grind
-        rw [tmp] at hi; clear tmp
-        have cc' : c' = c := by grind
-        rw [cc'] at hi hs'; clear cc'
+        obtain rfl : c = c' := by grind
         simp
         suffices Matches (step hs c ▹ ht) s by
           by_cases h1 : Nullable hs
@@ -202,9 +184,8 @@ theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
     | un₁ h => exact Matches.un₁ (step_correct₂ h)
     | un₂ h => exact Matches.un₂ (step_correct₂ h)
   | star R =>
-    obtain ⟨s', t', hs', ht', _⟩ := starₛ_nempty h
-    have hsst : s = s' ++ t' := by grind
-    rw [hsst]; clear hsst
+    obtain ⟨s', t', hs', ht', r⟩ := starₛ_nempty h
+    rw [r]
     exact Matches.comp (step_correct₂ hs') ht'
 
 theorem steps_correct₁ : Matches (steps R s) [] → Matches R s := by
