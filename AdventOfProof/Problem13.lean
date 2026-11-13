@@ -17,11 +17,11 @@ def fromRadix (n : Nat) : {f : Nat} → List.Vector (Fin n) f → Nat
 | .zero, List.Vector.nil => 0
 | .succ _, v => (↑ (List.Vector.head v)) + (n * fromRadix n (List.Vector.tail v))
 
-theorem goal₁ (n : Nat)[MoreThanOne n](f : Nat)(num : List.Vector (Fin n) f) :
+theorem goal₁ (n : Nat) [MoreThanOne n] (f : Nat) (num : List.Vector (Fin n) f) :
               toRadix n f (fromRadix n num) = num
   := by sorry
 
-theorem goal₂ (n : Nat)[MoreThanOne n](f : Nat)(k : Nat)(bound : k < n ^ f) :
+theorem goal₂ (n : Nat) [MoreThanOne n] (f : Nat) (k : Nat) (bound : k < n ^ f) :
               fromRadix n (toRadix n f k) = k
   := by sorry
 
