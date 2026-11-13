@@ -6,8 +6,8 @@ def Inj (f : Fin n → Fin n) : Prop := ∀ i j, f i = f j → i = j
 def Sur (f : Fin n → Fin n) : Prop := ∀ x, ∃ y, f y = x
 
 def g (f : Fin n → Fin n) (x : Fin n) : Nat → Fin n
-| 0 => x
-| k + 1 => f (g f x k)
+  | 0 => x
+  | k + 1 => f (g f x k)
 
 lemma nat_fin_repeat (f : Nat → Fin n) : ∃ (a d : Nat), f a = f (d + 1 + a) := by
   induction n
@@ -37,7 +37,8 @@ lemma nat_fin_repeat (f : Nat → Fin n) : ∃ (a d : Nat), f a = f (d + 1 + a) 
       simp [f'] at ih
       grind
 
-lemma g_inf_cancel {a b d : Nat} (f : Fin n → Fin n) (hi : Inj f) : g f x (a + d) = g f x (b + d) → g f x a = g f x b := by
+lemma g_inf_cancel {a b d : Nat} (f : Fin n → Fin n) (hi : Inj f)
+    : g f x (a + d) = g f x (b + d) → g f x a = g f x b := by
   intro he
   induction d
   case zero => simpa [he]

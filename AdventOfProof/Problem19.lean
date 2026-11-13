@@ -3,13 +3,12 @@ import Mathlib
 namespace Problem19
 
 inductive Regex : Type where
-| fail    : Regex
-| ε       : Regex
-| char    : Char → Regex
-| comp    : Regex → Regex → Regex
-| union   : Regex → Regex → Regex
-| star    : Regex → Regex
-
+  | fail : Regex
+  | ε : Regex
+  | char : Char → Regex
+  | comp : Regex → Regex → Regex
+  | union : Regex → Regex → Regex
+  | star : Regex → Regex
 
 infixl:62 " ▹ " => Regex.comp
 infixl:65 " ⊎ " => Regex.union
@@ -18,196 +17,133 @@ notation "∅"=> Regex.fail
 notation "[" x "]" => Regex.char x
 
 inductive Matches : Regex → List Char → Prop where
-| empty : Matches .ε []
-| char  : Matches [c] [c]
-| comp  : Matches R s → Matches S t → Matches (R ▹ S) (s ++ t)
-| un₁   : Matches R s → Matches (R ⊎ S) s
-| un₂   : Matches S s → Matches (R ⊎ S) s
-| starₑ : Matches (R⋆) []
-| starₛ : Matches R s → Matches (R⋆) t → Matches (R⋆) (s ++ t)
+  | empty : Matches .ε []
+  | char : Matches [c] [c]
+  | comp : Matches R s → Matches S t → Matches (R ▹ S) (s ++ t)
+  | un₁ : Matches R s → Matches (R ⊎ S) s
+  | un₂ : Matches S s → Matches (R ⊎ S) s
+  | starₑ : Matches (R⋆) []
+  | starₛ : Matches R s → Matches (R⋆) t → Matches (R⋆) (s ++ t)
 
-lemma starₛ_nempty (h : Matches (R⋆) (c :: s)) :
-  ∃ a b, Matches R (c :: a) ∧ Matches (R⋆) b ∧ (s = a ++ b) := by
+variable {R S : Regex} {c d : Char} {s t : List Char}
+
+/-! ### Inversion
+
+`cases` on `Matches R s` is easy when `s` is a variable and painful when it is a pattern such
+as `[]` or `c :: s`. These lemmas pay that cost once, with `s` a variable, and feed the simp set. -/
+
+@[simp] lemma not_fail : ¬ Matches ∅ s := by rintro ⟨⟩
+
+@[simp]
+lemma eps_iff : Matches .ε s ↔ s = [] :=
+  ⟨fun h => by cases h; rfl, fun h => h ▸ .empty⟩
+
+@[simp]
+lemma char_iff : Matches [c] s ↔ s = ([c] : List Char) :=
+  ⟨fun h => by cases h; rfl, fun h => h ▸ .char⟩
+
+@[simp]
+lemma union_iff : Matches (R ⊎ S) s ↔ Matches R s ∨ Matches S s :=
+  ⟨
+    fun h => by
+      cases h with
+      | un₁ h => exact .inl h
+      | un₂ h => exact .inr h,
+    fun h => h.elim .un₁ .un₂
+  ⟩
+
+@[simp]
+lemma comp_iff : Matches (R ▹ S) s ↔ ∃ a b, Matches R a ∧ Matches S b ∧ s = a ++ b :=
+  ⟨
+    fun h => by
+      cases h with
+      | comp ha hb => exact ⟨_, _, ha, hb, rfl⟩,
+    fun ⟨_, _, ha, hb, h⟩ => h ▸ .comp ha hb
+  ⟩
+
+/-- Inversion for `⋆`, with the first chunk forced to be non-empty. Not a `simp` lemma: the
+right-hand side mentions `Matches (R⋆) b`, so simp would loop. -/
+lemma starₛ_nempty (h : Matches (R⋆) (c :: s))
+    : ∃ a b, Matches R (c :: a) ∧ Matches (R⋆) b ∧ (s = a ++ b) := by
   generalize hx : c :: s = xs at h
   generalize hR : R⋆ = R' at h
   induction h generalizing s R with
   | @starₛ R'' u v hu hv hiu hiv =>
-    obtain _ | ⟨d, u⟩ := u <;> grind
+      obtain _ | ⟨d, u⟩ := u <;> grind
   | _ => contradiction
+
+/-! ### Nullability -/
 
 @[simp]
 def Nullable : Regex → Prop
-| .fail => False
-| .ε    => True
-| [ _ ] => False
-| r ▹ s => Nullable r ∧ Nullable s
-| r ⊎ s => Nullable r ∨ Nullable s
-| _ ⋆   => True
+  | .fail => False
+  | .ε => True
+  | [_] => False
+  | r ▹ s => Nullable r ∧ Nullable s
+  | r ⊎ s => Nullable r ∨ Nullable s
+  | _ ⋆ => True
 
 instance nullable : (r : Regex) → Decidable (Nullable r)
-| .fail => .isFalse id
-| .ε    => .isTrue trivial
-| [ _ ] => .isFalse id
-| _ ⋆   => .isTrue trivial
-| r ▹ s => @instDecidableAnd _ _ (nullable r) (nullable s)
-| r ⊎ s => @instDecidableOr _ _ (nullable r) (nullable s)
+  | .fail => .isFalse id
+  | .ε => .isTrue trivial
+  | [_] => .isFalse id
+  | _ ⋆ => .isTrue trivial
+  | r ▹ s => @instDecidableAnd _ _ (nullable r) (nullable s)
+  | r ⊎ s => @instDecidableOr _ _ (nullable r) (nullable s)
 
-theorem nullable_correct₁ : Nullable R → Matches R [] := by
-  intro null
-  induction R with
-  | fail => simp at null
-  | ε => exact Matches.empty
-  | char a => simp at null
-  | comp a b ah bh =>
-    obtain ⟨na, nb⟩ := null
-    exact Matches.comp (ah na) (bh nb)
-  | union a b ah bh =>
-    cases null with
-    | inl null => exact Matches.un₁ (ah null)
-    | inr null => exact Matches.un₂ (bh null)
-  | star => exact Matches.starₑ
+theorem nullable_iff : Nullable R ↔ Matches R [] := by
+  induction R <;> simp_all [Matches.starₑ]
 
-theorem nullable_correct₂ : Matches R [] → Nullable R := by
-  intro m
-  induction R with
-  | fail => cases m
-  | ε => simp
-  | char c => cases m
-  | comp a b ah bh =>
-    generalize hs : ([] : List Char) = xs at m
-    symm at hs
-    cases m with
-    | @comp _ sa _ sb ma mb =>
-      obtain ⟨rfl, rfl⟩ := List.append_eq_nil_iff.mp hs
-      exact ⟨ah ma, bh mb⟩
-  | union a b ah bh =>
-    simp
-    cases m with
-    | un₁ h => grind
-    | un₂ h => grind
-  | star a ah =>
-    trivial
+/-! ### Brzozowski derivatives -/
 
 @[simp]
 def step : Regex → Char → Regex
-| .fail , _ => ∅
-| .ε    , _ => ∅
-| [ d ] , c => if c = d then .ε else ∅
-| r ▹ s , c => if Nullable r then (step r c ▹ s) ⊎ (step s c) else step r c ▹ s
-| r ⊎ s , c => step r c ⊎ step s c
-| r ⋆   , c => step r c ▹ (r ⋆)
+  | .fail, _ => ∅
+  | .ε, _ => ∅
+  | [d], c => if c = d then .ε else ∅
+  | r ▹ s, c => if Nullable r then (step r c ▹ s) ⊎ (step s c) else step r c ▹ s
+  | r ⊎ s, c => step r c ⊎ step s c
+  | r ⋆, c => step r c ▹ (r ⋆)
+
+theorem step_iff : Matches (step R c) s ↔ Matches R (c :: s) := by
+  induction R generalizing s with
+  | fail | ε => simp
+  | char d => by_cases h : c = d <;> simp_all
+  | union x y ihx ihy => simp_all
+  | star x ihx =>
+      simp only [step, comp_iff, ihx]
+      constructor
+      · rintro ⟨a, b, ha, hb, rfl⟩
+        exact .starₛ ha hb
+      · exact starₛ_nempty
+  | comp x y ihx ihy =>
+      by_cases h : Nullable x <;> simp [h, List.cons_eq_append_iff, ihx, ihy]
+      · constructor
+        · rintro (⟨a, ha, b, hb, rfl⟩ | hy)
+          · exact ⟨c :: a, ha, b, hb, .inr ⟨a, rfl, rfl⟩⟩
+          · exact ⟨[], nullable_iff.mp h, c :: s, hy, .inl ⟨rfl, rfl⟩⟩
+        · rintro ⟨a, ha, b, hb, ⟨rfl, rfl⟩ | ⟨a', rfl, rfl⟩⟩
+          · exact .inr hb
+          · exact .inl ⟨a', ha, b, hb, rfl⟩
+      · constructor
+        · rintro ⟨a, ha, b, hb, rfl⟩
+          exact ⟨c :: a, ha, b, hb, .inr ⟨a, rfl, rfl⟩⟩
+        · rintro ⟨a, ha, b, hb, ⟨rfl, rfl⟩ | ⟨a', rfl, rfl⟩⟩
+          · exact absurd (nullable_iff.mpr ha) h
+          · exact ⟨a', ha, b, hb, rfl⟩
 
 @[simp]
 def steps (R : Regex) : List Char → Regex
-| x :: xs => steps (step R x) xs
-| [] => R
+  | x :: xs => steps (step R x) xs
+  | [] => R
 
-theorem step_correct₁ : Matches (step R c) s → Matches R (c :: s) := by
-  induction R generalizing s with
-  | fail | ε => intro h; cases h
-  | char c₁ =>
-    intro h
-    simp at h
-    by_cases h₁ : c = c₁
-    · simp [h₁] at h ⊢
-      cases h with
-      | empty => exact Matches.char
-    · simp [h₁] at h ⊢
-      cases h
-  | comp x y ihx ihy =>
-    intro h
-    simp at h
-    by_cases h₁ : Nullable x
-    · simp [h₁] at h
-      cases h with
-      | un₁ h =>
-        cases h with
-        | @comp _ s _ t hs ht =>
-          exact Matches.comp (ihx hs) ht
-      | un₂ h =>
-        exact Matches.comp (nullable_correct₁ h₁) (ihy h)
-    · simp [h₁] at h ⊢
-      cases h with
-      | @comp _ s _ t hs ht =>
-        exact Matches.comp (ihx hs) ht
-  | union x y ihx ihy =>
-    intro h
-    cases h with
-    | un₁ h => exact Matches.un₁ (ihx h)
-    | un₂ h => exact Matches.un₂ (ihy h)
-  | star x ihx =>
-    intro h
-    cases h with
-    | @comp _ s _ t hs ht =>
-      exact Matches.starₛ (ihx hs) ht
-
-theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
-  induction R generalizing s with
-  | fail | ε => intro h; cases h
-  | char c₁ =>
-    intro h
-    by_cases h₁ : c = c₁
-    · simp [h₁] at h ⊢
-      cases h
-      exact Matches.empty
-    · cases h
-      contradiction
-  | comp x y ihx ihy =>
-    intro h
-    generalize hi : c :: s = xs at h
-    cases h with
-    | @comp _ s' _ t' hs' ht' =>
-      cases s' with
-      | nil =>
-        simp at hi
-        have tmp := nullable_correct₂ hs'
-        simp [tmp]
-        apply Matches.un₂
-        subst hi
-        exact ihy ht'
-      | cons c' s' =>
-        obtain rfl : c = c' := by grind
-        simp
-        suffices Matches (step x c ▹ y) s by
-          by_cases h1 : Nullable x
-          · simp [h1]
-            exact Matches.un₁ this
-          · simp [h1]
-            exact this
-        obtain rfl : s = s' ++ t' := by grind
-        apply Matches.comp
-        · exact ihx hs'
-        · exact ht'
-  | union P Q ihP ihQ =>
-    intro h
-    cases h with
-    | un₁ h => exact Matches.un₁ (ihP h)
-    | un₂ h => exact Matches.un₂ (ihQ h)
-  | star x ihx =>
-    intro h
-    obtain ⟨s', t', hs', ht', r⟩ := starₛ_nempty h
-    rw [r]
-    exact Matches.comp (ihx hs') ht'
-
-theorem steps_correct₁ : Matches (steps R s) [] → Matches R s := by
-  induction s generalizing R with
-  | nil => simp
-  | cons head t ht => exact fun h => step_correct₁ (ht h)
-
-theorem steps_correct₂ : Matches R s → Matches (steps R s) [] := by
-  induction s generalizing R with
-  | nil => simp
-  | cons head t ht => exact fun h => ht (step_correct₂ h)
-
-lemma check_lemma₁ (n : Nullable (steps R s)) : Matches R s := by
-  exact steps_correct₁ (nullable_correct₁ n)
-
-lemma check_lemma₂ (m : Matches R s) : Nullable (steps R s) := by
-  exact nullable_correct₂ (steps_correct₂ m)
+theorem steps_iff : Matches (steps R s) [] ↔ Matches R s := by
+  induction s generalizing R <;> simp_all [step_iff]
 
 instance check (R : Regex) (s : List Char) : Decidable (Matches R s) :=
-  if p : Nullable (steps R s)
-  then isTrue (check_lemma₁ p)
-  else isFalse (fun x => p (check_lemma₂ x))
+  decidable_of_iff _ (nullable_iff.trans steps_iff)
+
+example : Matches (['a']⋆ ▹ ['b']) ['a', 'a', 'b'] := by decide
+example : ¬ Matches (['a']⋆ ▹ ['b']) ['a', 'b', 'b'] := by decide
 
 end Problem19

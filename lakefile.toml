@@ -9,3 +9,8 @@ rev = "v4.30.0"
 
 [[lean_lib]]
 name = "AdventOfProof"
+
+[[require]]
+name = "leanfmt"
+git = "https://github.com/duckki/leanfmt.git"
+rev = "v0.4.7"

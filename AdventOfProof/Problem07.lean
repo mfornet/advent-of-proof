@@ -8,12 +8,13 @@ axiom f : T → T
 -- marked noncomputable as f may be noncomputable
 @[simp]
 noncomputable def tortoise (p : T × T) : T × T := (f p.1, p.2)
+
 @[simp]
 noncomputable def hare (p : T × T) : T × T := (p.1, f p.2)
 
 inductive Run : T × T → Nat → Prop where
-| empty : Run (c, c) 0
-| step  : Run (tortoise p) n → Run p (Nat.succ n)
+  | empty : Run (c, c) 0
+  | step : Run (tortoise p) n → Run p (Nat.succ n)
 
 @[simp]
 def Loop (n : Nat) : Prop := ∃ c : T, Run (c, c) n
@@ -30,7 +31,9 @@ lemma nat_repeat_f : Nat.repeat g n (g x) = Nat.repeat g (Nat.succ n) x := by
     rw [ih]
     simp [Nat.repeat]
 
-lemma race_repeat_spec {p : T × T} {n : Nat} : Nat.repeat race n p = (Nat.repeat f n p.1, Nat.repeat f n <| Nat.repeat f n p.2) := by
+lemma race_repeat_spec {p : T × T} {n : Nat}
+    : Nat.repeat race n p
+      = (Nat.repeat f n p.1, Nat.repeat f n <| Nat.repeat f n p.2) := by
   induction' n
   case zero => simp [Nat.repeat]
   case succ n ih =>
@@ -40,7 +43,10 @@ lemma race_repeat_spec {p : T × T} {n : Nat} : Nat.repeat race n p = (Nat.repea
     rw [nat_repeat_f]
     simp [Nat.repeat]
 
-lemma race_repeat_spec_inst {x : T} {n : Nat} : Nat.repeat race n (x, x) = (Nat.repeat f n x, Nat.repeat f n <| Nat.repeat f n x) := by exact race_repeat_spec
+lemma race_repeat_spec_inst {x : T} {n : Nat}
+    : Nat.repeat race n (x, x)
+      = (Nat.repeat f n x, Nat.repeat f n <| Nat.repeat f n x) := by
+  exact race_repeat_spec
 
 lemma run_repeat_tort : Run (Nat.repeat tortoise n p) m → Run p (m + n) := by
   induction' n generalizing p m

@@ -3,9 +3,9 @@ import Mathlib.Tactic
 namespace Problem3
 
 inductive subseq {A : Type} : List A → List A → Prop where
-| subseq_nil : subseq [] []
-| subseq_cons : ∀{xs ys}{x}, subseq xs ys → subseq (x :: xs) (x :: ys)
-| subseq_skip : ∀{x}{xs ys}, subseq xs ys → subseq xs (x :: ys)
+  | subseq_nil : subseq [] []
+  | subseq_cons : ∀{xs ys}{x}, subseq xs ys → subseq (x :: xs) (x :: ys)
+  | subseq_skip : ∀{x}{xs ys}, subseq xs ys → subseq xs (x :: ys)
 infix:50 " ⊑ " => subseq
 
 theorem subseq_refl : ∀{A : Type} (xs : List A), xs ⊑ xs := by
@@ -14,10 +14,10 @@ theorem subseq_refl : ∀{A : Type} (xs : List A), xs ⊑ xs := by
   case nil => exact subseq.subseq_nil
   case cons x xs ih => exact subseq.subseq_cons ih
 
-lemma subseq_cons_spec {A : Type} {xs ys : List A} {x}:  xs ⊑ ys → x::xs ⊑ x::ys := by
+lemma subseq_cons_spec {A : Type} {xs ys : List A} {x}: xs ⊑ ys → x :: xs ⊑ x :: ys := by
   exact subseq.subseq_cons
 
-lemma subseq_skip_rev {A : Type} {xs ys : List A} {x}:  x::xs ⊑ ys → xs ⊑ ys := by
+lemma subseq_skip_rev {A : Type} {xs ys : List A} {x}: x :: xs ⊑ ys → xs ⊑ ys := by
   intro h
   cases h with
   | subseq_cons h => exact subseq.subseq_skip h
@@ -28,7 +28,7 @@ lemma empty_subseq {A : Type} {xs : List A}: [] ⊑ xs := by
   | nil => exact subseq.subseq_nil
   | cons x xs ih => exact subseq.subseq_skip ih
 
-lemma subseq_cons_rev {A : Type} {xs ys : List A} {x}:  x::xs ⊑ x::ys → xs ⊑ ys := by
+lemma subseq_cons_rev {A : Type} {xs ys : List A} {x}: x :: xs ⊑ x :: ys → xs ⊑ ys := by
   intro h
   cases h with
   | subseq_cons h => exact h
@@ -40,21 +40,22 @@ lemma subseq_empty : ∀{A : Type}{xs : List A}, [] ⊑ xs := by
   | nil => exact subseq.subseq_nil
   | cons x xs ih => exact subseq.subseq_skip ih
 
-lemma subseq_remove_second {A : Type} {xs ys : List A} {x y} : x :: y :: xs ⊑ ys → x :: xs ⊑ ys := by
+lemma subseq_remove_second {A : Type} {xs ys : List A} {x y}
+    : x :: y :: xs ⊑ ys → x :: xs ⊑ ys := by
   intro h
   induction ys generalizing x xs with
   | nil => contradiction
   | cons y' ys ih =>
-    cases h with
-    | subseq_cons h =>
-      apply subseq.subseq_cons
-      exact subseq_skip_rev h
-    | subseq_skip h =>
-      specialize ih h
-      apply subseq.subseq_skip
-      exact ih
+      cases h with
+      | subseq_cons h =>
+          apply subseq.subseq_cons
+          exact subseq_skip_rev h
+      | subseq_skip h =>
+          specialize ih h
+          apply subseq.subseq_skip
+          exact ih
 
-lemma not_subseq_of_cons_self {A : Type} {xs : List A} {x} : ¬x::xs ⊑ xs := by
+lemma not_subseq_of_cons_self {A : Type} {xs : List A} {x} : ¬x :: xs ⊑ xs := by
   intro h
   cases h with
   | subseq_cons h => exact not_subseq_of_cons_self h
@@ -76,7 +77,8 @@ theorem subseq_trans : ∀{A : Type}{xs ys zs : List A}, xs ⊑ ys → ys ⊑ zs
     suffices xs ⊑ ys' by exact subseq.subseq_skip this
     exact ih hxy
 
-theorem subseq_len : ∀{A : Type}{xs ys : List A}, xs ⊑ ys → List.length xs ≤ List.length ys := by
+theorem subseq_len
+    : ∀{A : Type}{xs ys : List A}, xs ⊑ ys → List.length xs ≤ List.length ys := by
   intro A xs ys h
   induction' h
   case subseq_nil => simp

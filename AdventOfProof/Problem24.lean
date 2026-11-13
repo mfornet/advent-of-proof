@@ -4,13 +4,13 @@ namespace Problem24
 
 -- Mathlib already has something called Tree
 inductive Tree' : Type where
-| leaf : Tree'
-| branch : Tree' → Tree' → Tree'
+  | leaf : Tree'
+  | branch : Tree' → Tree' → Tree'
 deriving Repr
 
 def toList (d : Nat) : Tree' → List Nat
-| .leaf => [d]
-| .branch t₁ t₂ => toList d.succ t₁ ++ toList d.succ t₂
+  | .leaf => [d]
+  | .branch t₁ t₂ => toList d.succ t₁ ++ toList d.succ t₂
 
 structure StackItem where
   tree : Tree'
@@ -25,22 +25,24 @@ def StackItem.merge (i j : StackItem) (_ : i.depth = j.depth): StackItem :=
 def Stack_push (i : StackItem) : List StackItem → List StackItem
   | [] => [i]
   | j :: js =>
-    if h : j.depth = i.depth then
-      Stack_push (j.merge i h) js
-    else
-      i :: j :: js
+      if h : j.depth = i.depth then
+        Stack_push (j.merge i h) js
+      else
+        i :: j :: js
 
 def depth (stack : List StackItem) : Nat :=
   stack.head?.map (·.depth) |>.getD 0
 
-lemma Stack_push_non_merge (stack : List StackItem) (i : StackItem) (h : depth stack < i.depth) : Stack_push i stack = i :: stack := by
+lemma Stack_push_non_merge (stack : List StackItem) (i : StackItem)
+    (h : depth stack < i.depth)
+    : Stack_push i stack = i :: stack := by
   cases stack with
   | nil => simp [Stack_push]
   | cons j js =>
-    simp [Stack_push]
-    intro he
-    simp [depth] at h
-    linarith
+      simp [Stack_push]
+      intro he
+      simp [depth] at h
+      linarith
 
 lemma Stack_push_depth_mon : depth (Stack_push i stack) ≤ i.depth := by
   induction' stack generalizing i
@@ -59,8 +61,9 @@ def toTreeRec (stack : List StackItem) : List Nat → List Tree'
   | [] => stack.map (·.tree)
   | d :: ds => toTreeRec (Stack_push (StackItem.new d) stack) ds
 
-lemma toTreeRec_main (stack : List StackItem) (h : depth stack ≤ d) :
-  toTreeRec stack (toList d t ++ suff) = toTreeRec (Stack_push { depth := d, tree := t } stack) suff := by
+lemma toTreeRec_main (stack : List StackItem) (h : depth stack ≤ d)
+    : toTreeRec stack (toList d t ++ suff)
+      = toTreeRec (Stack_push { depth := d, tree := t } stack) suff := by
   induction' t generalizing d suff stack
   case leaf => simp [toList, toTreeRec, StackItem.new]
   case branch t₁ t₂ ih₁ ih₂ =>
@@ -72,17 +75,20 @@ lemma toTreeRec_main (stack : List StackItem) (h : depth stack ≤ d) :
     rw [Stack_push_non_merge stack _ (by grind)]
     simp [Stack_push, StackItem.merge]
 
-lemma toTreeRec_merge (suff : List Nat): toTreeRec [ { tree := t₁, depth := d + 1 }] (toList (d + 1) t₂ ++ suff) = toTreeRec [ { tree := .branch t₁ t₂, depth := d }] suff := by
+lemma toTreeRec_merge (suff : List Nat)
+    : toTreeRec [{ tree := t₁, depth := d + 1 }] (toList (d + 1) t₂ ++ suff)
+      = toTreeRec [{ tree := .branch t₁ t₂, depth := d }] suff := by
   rw [toTreeRec_main _ (by simp [depth])]
   simp [Stack_push, StackItem.merge]
 
-lemma toTreeRec_cons :
-  toTreeRec [] (toList n t ++ suff) = toTreeRec [ { tree := t, depth := n }] suff
-  := by
+lemma toTreeRec_cons
+    : toTreeRec [] (toList n t ++ suff) = toTreeRec [{ tree := t, depth := n }] suff := by
   rw [toTreeRec_main _ (by simp [depth])]
   simp [Stack_push]
 
-lemma toTreeRec_merge_empty_suff : toTreeRec [ { tree := t₁, depth := d + 1 }] (toList (d + 1) t₂) = toTreeRec [ { tree := .branch t₁ t₂, depth := d }] [] := by
+lemma toTreeRec_merge_empty_suff
+    : toTreeRec [{ tree := t₁, depth := d + 1 }] (toList (d + 1) t₂)
+      = toTreeRec [{ tree := .branch t₁ t₂, depth := d }] [] := by
   have h := @toTreeRec_merge t₁ d t₂ []
   simp only [List.append_nil] at h
   assumption
