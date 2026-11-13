@@ -32,9 +32,7 @@ lemma starₛ_nempty (h : Matches (R⋆) (c :: s)) :
   generalize hR : R⋆ = R' at h
   induction h generalizing s R with
   | @starₛ R'' u v hu hv hiu hiv =>
-    cases u with
-    | nil => grind
-    | cons => grind
+    obtain _ | ⟨d, u⟩ := u <;> grind
   | _ => contradiction
 
 @[simp]
@@ -47,10 +45,10 @@ def Nullable : Regex → Prop
 | _ ⋆   => True
 
 instance nullable : (r : Regex) → Decidable (Nullable r)
-| .fail => isFalse (by simp)
-| .ε    => isTrue (by simp)
-| [ _ ] => isFalse (by simp)
-| r ⋆   => isTrue (by simp)
+| .fail => .isFalse id
+| .ε    => .isTrue trivial
+| [ _ ] => .isFalse id
+| _ ⋆   => .isTrue trivial
 | r ▹ s => @instDecidableAnd _ _ (nullable r) (nullable s)
 | r ⊎ s => @instDecidableOr _ _ (nullable r) (nullable s)
 
@@ -165,7 +163,7 @@ theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
         have tmp := nullable_correct₂ hs'
         simp [tmp]
         apply Matches.un₂
-        rw [← hi] at ht'
+        subst hi
         exact ihy ht'
       | cons c' s' =>
         obtain rfl : c = c' := by grind
@@ -176,8 +174,7 @@ theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := by
             exact Matches.un₁ this
           · simp [h1]
             exact this
-        have hsst : s = s' ++ t' := by grind
-        rw [hsst]; clear hsst
+        obtain rfl : s = s' ++ t' := by grind
         apply Matches.comp
         · exact ihx hs'
         · exact ht'
