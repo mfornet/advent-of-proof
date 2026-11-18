@@ -1,0 +1,24 @@
+{
+  "challenge_module": "Challenge.Problem11",
+  "solution_module": "Solution.Problem11",
+  "theorem_names": [
+    "Problem11.ident_red",
+    "Problem11.const_sop_red",
+    "Problem11.const_kop_red",
+    "Problem11.app_app_red",
+    "Problem11.beta"
+  ],
+  "definition_names": [
+    "Problem11.ident",
+    "Problem11.const_sop",
+    "Problem11.const_kop",
+    "Problem11.app_app",
+    "Problem11.lambda"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "enable_nanoda": false
+}

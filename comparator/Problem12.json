@@ -1,0 +1,14 @@
+{
+  "challenge_module": "Challenge.Problem12",
+  "solution_module": "Solution.Problem12",
+  "theorem_names": [
+    "Problem12.handshaking"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "enable_nanoda": false
+}

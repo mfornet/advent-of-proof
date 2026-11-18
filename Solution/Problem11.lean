@@ -13,8 +13,6 @@ inductive reduces : Term → Term → Prop where
   | red_left : ∀ {M1 M2 N}, reduces M1 M2 → reduces (.App M1 N) (.App M2 N)
   | red_right : ∀ {M N1 N2}, reduces N1 N2 → reduces (.App M N1) (.App M N2)
   | red_trans : ∀ {M N P}, reduces M N → reduces N P → reduces M P
-  -- Added this variant to make it easier.
-  | red_rfl : ∀ {M}, reduces M M
 
 infixl:60 " ↦ " => reduces
 
@@ -33,18 +31,21 @@ theorem red_left (h_le : M1 ↦ M2) (h_ri : N1 ↦ N2) : (.App M1 N1) ↦ (.App 
   reduces.red_trans (.red_right h_ri) (.red_left h_le)
 
 theorem ident_red : .App ident M ↦ M := by
-  exact red_S (red_K .red_rfl)
+  exact red_S .red_K
 
 def const_sop : Term := .App .Kop .Sop
-theorem const_sop_red : .App const_sop M ↦ .Sop := red_K .red_rfl
+theorem const_sop_red : .App const_sop M ↦ .Sop := .red_K
 
 def const_kop : Term := .App .Kop .Kop
-theorem const_kop_red : .App const_kop M ↦ .Kop := red_K .red_rfl
+theorem const_kop_red : ∀ M, .App const_kop M ↦ .Kop := by
+  intro M
+  exact .red_K
 
 def app_app (M₁ : Term) (M₂ : Term) : Term := .App (.App .Sop M₁) M₂
 
-theorem app_app_red : .App (app_app M₁ M₂) M₃ ↦ .App (.App M₁ M₃) (.App M₂ M₃) :=
-  red_S .red_rfl
+theorem app_app_red : ∀ M₁ M₂ M₃, .App (app_app M₁ M₂) M₃ ↦ .App (.App M₁ M₃) (.App M₂ M₃) := by
+  intro M₁ M₂ M₃
+  exact .red_S
 
 def substitution : Term → Term → Term
   | .Ref, N => N
@@ -58,11 +59,12 @@ def lambda : Term → Term
   | .Kop => const_kop
   | .App M₁ M₂ => app_app (lambda M₁) (lambda M₂)
 
-theorem beta : .App (lambda M) N ↦ substitution M N := by
+theorem beta : ∀ M N, .App (lambda M) N ↦ substitution M N := by
+  intro M N
   induction M with
-  | Ref => exact red_S (red_K .red_rfl)
-  | Sop => exact red_K .red_rfl
-  | Kop => exact red_K .red_rfl
+  | Ref => exact ident_red
+  | Sop => exact const_sop_red
+  | Kop => exact const_kop_red N
   | App M₁ M₂ ih₁ ih₂ => exact red_S (red_left ih₁ ih₂)
 
 end Problem11

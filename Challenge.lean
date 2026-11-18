@@ -1,0 +1,25 @@
+-- Build every trusted Advent of Proof challenge module.
+import Challenge.Problem01
+import Challenge.Problem02
+import Challenge.Problem03
+import Challenge.Problem04
+import Challenge.Problem05
+import Challenge.Problem06
+import Challenge.Problem07
+import Challenge.Problem08
+import Challenge.Problem09
+import Challenge.Problem10
+import Challenge.Problem11
+import Challenge.Problem12
+import Challenge.Problem13
+import Challenge.Problem14
+import Challenge.Problem15
+import Challenge.Problem16
+import Challenge.Problem17
+import Challenge.Problem18
+import Challenge.Problem19
+import Challenge.Problem20
+import Challenge.Problem21
+import Challenge.Problem22
+import Challenge.Problem23
+import Challenge.Problem24

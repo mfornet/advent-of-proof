@@ -1,0 +1,17 @@
+{
+  "challenge_module": "Challenge.Problem18",
+  "solution_module": "Solution.Problem18",
+  "theorem_names": [
+    "Problem18.compose_correct",
+    "Problem18.compose_assoc",
+    "Problem18.merge_pushout"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice",
+    "Problem18.Symbol"
+  ],
+  "enable_nanoda": false
+}

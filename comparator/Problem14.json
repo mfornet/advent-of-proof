@@ -1,0 +1,20 @@
+{
+  "challenge_module": "Challenge.Problem14",
+  "solution_module": "Solution.Problem14",
+  "theorem_names": [
+    "Problem14.proof"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice",
+    "Problem14.A",
+    "Problem14.st",
+    "Problem14.ι",
+    "Problem14.st_assoc",
+    "Problem14.st_identity_r",
+    "Problem14.st_identity_l"
+  ],
+  "enable_nanoda": false
+}

@@ -96,9 +96,12 @@ lemma loop
       intro s h; simp [conjₐ, negₐ] at h; replace ⟨⟨h, h₁⟩, h₂⟩ := h; rw [h, h₂, h₁]; grind)
     (Triple.whileₕ (Triple.seqₕ (Triple.updₕ.upd_pre (by intro σ; simp)) (loop_body₂ A₀)))
 
-theorem goal : Triple (fun σ => σ.A = A₀) prog (fun σ => σ.s = A₀.sum) :=
+theorem goal_reversed : Triple (fun σ => σ.A = A₀) prog (fun σ => σ.s = A₀.sum) :=
   Triple.seqₕ (loop A₀)
     (Triple.seqₕ
       (Triple.conseqₕ (fun _ x => x) (by unfold a2 a3; intro s h; grind) (h2 A₀)) (h1 A₀))
+
+theorem goal {A₀ : List Nat} : Triple (fun σ => A₀ = σ.A) prog (fun σ => σ.s = A₀.sum) :=
+  Triple.conseqₕ (fun _ h => h.symm) (fun _ h => h) (goal_reversed A₀)
 
 end Problem23

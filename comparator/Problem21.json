@@ -1,0 +1,17 @@
+{
+  "challenge_module": "Challenge.Problem21",
+  "solution_module": "Solution.Problem21",
+  "theorem_names": [
+    "Problem21.lem₁",
+    "Problem21.lem₂",
+    "Problem21.lem₃"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice",
+    "Problem21.Atom"
+  ],
+  "enable_nanoda": false
+}

@@ -1,0 +1,14 @@
+{
+  "challenge_module": "Challenge.Problem24",
+  "solution_module": "Solution.Problem24",
+  "theorem_names": [
+    "Problem24.toList_injective"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "enable_nanoda": false
+}

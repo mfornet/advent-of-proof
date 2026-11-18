@@ -1,0 +1,14 @@
+{
+  "challenge_module": "Challenge.Problem02",
+  "solution_module": "Solution.Problem02",
+  "theorem_names": [
+    "Problem2.strip"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "enable_nanoda": false
+}

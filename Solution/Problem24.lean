@@ -6,7 +6,6 @@ namespace Problem24
 inductive Tree' : Type where
   | leaf : Tree'
   | branch : Tree' → Tree' → Tree'
-deriving Repr
 
 def toList (d : Nat) : Tree' → List Nat
   | .leaf => [d]

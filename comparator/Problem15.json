@@ -1,0 +1,23 @@
+{
+  "challenge_module": "Challenge.Problem15",
+  "solution_module": "Solution.Problem15",
+  "theorem_names": [
+    "Problem15.composition",
+    "Problem15.assoc",
+    "Problem15.identity_l",
+    "Problem15.identity_r",
+    "Problem15.inverse_l",
+    "Problem15.inverse_r"
+  ],
+  "definition_names": [
+    "Problem15.comp",
+    "Problem15.ι",
+    "Problem15.inv"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "enable_nanoda": false
+}

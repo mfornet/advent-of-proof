@@ -1,0 +1,24 @@
+{
+  "challenge_module": "Challenge.Problem10",
+  "solution_module": "Solution.Problem10",
+  "theorem_names": [
+    "Problem10.prop₁",
+    "Problem10.prop₂",
+    "Problem10.uniqueness"
+  ],
+  "definition_names": [
+    "Problem10.co"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice",
+    "Problem10.C",
+    "Problem10.st",
+    "Problem10.op",
+    "Problem10.assoc",
+    "Problem10.op_prop",
+    "Problem10.commute"
+  ],
+  "enable_nanoda": false
+}

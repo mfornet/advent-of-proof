@@ -1,0 +1,21 @@
+{
+  "challenge_module": "Challenge.Problem22",
+  "solution_module": "Solution.Problem22",
+  "theorem_names": [
+    "Problem22.reflexive",
+    "Problem22.symmetric",
+    "Problem22.transitive",
+    "Problem22.bisim_is_bisim",
+    "Problem22.hml_bisim"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice",
+    "Problem22.State",
+    "Problem22.Act",
+    "Problem22.step"
+  ],
+  "enable_nanoda": false
+}

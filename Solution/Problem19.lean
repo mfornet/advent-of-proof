@@ -1,29 +1,6 @@
-import Mathlib
+import Spec.Problem19
 
 namespace Problem19
-
-inductive Regex : Type where
-  | fail : Regex
-  | ε : Regex
-  | char : Char → Regex
-  | comp : Regex → Regex → Regex
-  | union : Regex → Regex → Regex
-  | star : Regex → Regex
-
-infixl:62 " ▹ " => Regex.comp
-infixl:65 " ⊎ " => Regex.union
-postfix:70 "⋆" => Regex.star
-notation "∅"=> Regex.fail
-notation "[" x "]" => Regex.char x
-
-inductive Matches : Regex → List Char → Prop where
-  | empty : Matches .ε []
-  | char : Matches [c] [c]
-  | comp : Matches R s → Matches S t → Matches (R ▹ S) (s ++ t)
-  | un₁ : Matches R s → Matches (R ⊎ S) s
-  | un₂ : Matches S s → Matches (R ⊎ S) s
-  | starₑ : Matches (R⋆) []
-  | starₛ : Matches R s → Matches (R⋆) t → Matches (R⋆) (s ++ t)
 
 variable {R S : Regex} {c d : Char} {s t : List Char}
 
@@ -74,36 +51,10 @@ lemma starₛ_nempty (h : Matches (R⋆) (c :: s))
 
 /-! ### Nullability -/
 
-@[simp]
-def Nullable : Regex → Prop
-  | .fail => False
-  | .ε => True
-  | [_] => False
-  | r ▹ s => Nullable r ∧ Nullable s
-  | r ⊎ s => Nullable r ∨ Nullable s
-  | _ ⋆ => True
-
-instance nullable : (r : Regex) → Decidable (Nullable r)
-  | .fail => .isFalse id
-  | .ε => .isTrue trivial
-  | [_] => .isFalse id
-  | _ ⋆ => .isTrue trivial
-  | r ▹ s => @instDecidableAnd _ _ (nullable r) (nullable s)
-  | r ⊎ s => @instDecidableOr _ _ (nullable r) (nullable s)
-
 theorem nullable_iff : Nullable R ↔ Matches R [] := by
   induction R <;> simp_all [Matches.starₑ]
 
 /-! ### Brzozowski derivatives -/
-
-@[simp]
-def step : Regex → Char → Regex
-  | .fail, _ => ∅
-  | .ε, _ => ∅
-  | [d], c => if c = d then .ε else ∅
-  | r ▹ s, c => if Nullable r then (step r c ▹ s) ⊎ (step s c) else step r c ▹ s
-  | r ⊎ s, c => step r c ⊎ step s c
-  | r ⋆, c => step r c ▹ (r ⋆)
 
 theorem step_iff : Matches (step R c) s ↔ Matches R (c :: s) := by
   induction R generalizing s with
@@ -132,13 +83,23 @@ theorem step_iff : Matches (step R c) s ↔ Matches R (c :: s) := by
           · exact absurd (nullable_iff.mpr ha) h
           · exact ⟨a', ha, b, hb, rfl⟩
 
-@[simp]
-def steps (R : Regex) : List Char → Regex
-  | x :: xs => steps (step R x) xs
-  | [] => R
-
 theorem steps_iff : Matches (steps R s) [] ↔ Matches R s := by
   induction s generalizing R <;> simp_all [step_iff]
+
+theorem nullable_correct₁ : Nullable R → Matches R [] := nullable_iff.mp
+theorem nullable_correct₂ : Matches R [] → Nullable R := nullable_iff.mpr
+
+theorem step_correct₁ : Matches (step R c) s → Matches R (c :: s) := step_iff.mp
+theorem step_correct₂ : Matches R (c :: s) → Matches (step R c) s := step_iff.mpr
+
+theorem steps_correct₁ : Matches (steps R s) [] → Matches R s := steps_iff.mp
+theorem steps_correct₂ : Matches R s → Matches (steps R s) [] := steps_iff.mpr
+
+lemma check_lemma₁ (n : Nullable (steps R s)) : Matches R s :=
+  steps_correct₁ (nullable_correct₁ n)
+
+lemma check_lemma₂ (m : Matches R s) : Nullable (steps R s) :=
+  nullable_correct₂ (steps_correct₂ m)
 
 instance check (R : Regex) (s : List Char) : Decidable (Matches R s) :=
   decidable_of_iff _ (nullable_iff.trans steps_iff)

@@ -1,0 +1,21 @@
+{
+  "challenge_module": "Challenge.Problem19",
+  "solution_module": "Solution.Problem19",
+  "theorem_names": [
+    "Problem19.nullable_correct₁",
+    "Problem19.nullable_correct₂",
+    "Problem19.step_correct₁",
+    "Problem19.step_correct₂",
+    "Problem19.steps_correct₁",
+    "Problem19.steps_correct₂",
+    "Problem19.check_lemma₁",
+    "Problem19.check_lemma₂"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "enable_nanoda": false
+}

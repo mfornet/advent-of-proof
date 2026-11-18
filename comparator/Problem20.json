@@ -1,0 +1,15 @@
+{
+  "challenge_module": "Challenge.Problem20",
+  "solution_module": "Solution.Problem20",
+  "theorem_names": [
+    "Problem20.identᵣ",
+    "Problem20.assoc"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "enable_nanoda": false
+}

@@ -1,0 +1,17 @@
+{
+  "challenge_module": "Challenge.Problem03",
+  "solution_module": "Solution.Problem03",
+  "theorem_names": [
+    "Problem3.subseq_refl",
+    "Problem3.subseq_trans",
+    "Problem3.subseq_len",
+    "Problem3.subseq_antisym"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "enable_nanoda": false
+}

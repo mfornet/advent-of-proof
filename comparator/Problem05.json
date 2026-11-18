@@ -1,0 +1,14 @@
+{
+  "challenge_module": "Challenge.Problem05",
+  "solution_module": "Solution.Problem05",
+  "theorem_names": [],
+  "definition_names": [
+    "Problem5.goal"
+  ],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "enable_nanoda": false
+}

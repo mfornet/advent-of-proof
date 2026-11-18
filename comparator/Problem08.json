@@ -1,0 +1,15 @@
+{
+  "challenge_module": "Challenge.Problem08",
+  "solution_module": "Solution.Problem08",
+  "theorem_names": [
+    "Problem8.prf₁",
+    "Problem8.prf₂"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "enable_nanoda": false
+}
