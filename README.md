@@ -40,6 +40,21 @@ project. If you plan to rely on Comparator's safe verification guarantee, use
 a fresh trusted checkout and run Comparator before compiling solution files
 outside its sandbox.
 
+The `justfile` provides per-problem commands (day numbers 1–24):
+
+```sh
+just build 1           # Compile Solution.Problem01
+just check 1           # Compile and reject unpermitted axioms, including sorry
+just comparator 1      # Run full Comparator for one problem
+just comparator-all    # Run full Comparator for all problems
+```
+
+`just check` is a quick local check of the targets listed in that day's
+Comparator config. It does not compare their statements with the original
+challenge; use `just comparator` for that. The Comparator recipes use
+`scripts/check_comparator.sh`, with the same exporter and sandbox requirements
+described below.
+
 On Linux with a working `landrun`, check one day or all days:
 
 ```sh
@@ -54,7 +69,7 @@ specified by Comparator:
 ```sh
 systemd-run --property=RestrictAddressFamilies=~AF_UNIX --user --pty \
   -E PATH="$PATH" --working-directory "$(pwd)" \
-  -- bash -c 'scripts/check_comparator.sh 1'
+  -- bash -c 'just comparator 1'
 ```
 
 The wrapper supplies the correct exporter, config, and `landrun` paths; it
@@ -67,7 +82,7 @@ On macOS, `landrun` cannot apply its Linux Landlock sandbox. To run a local
 development check, explicitly use Comparator's `fake-landrun.sh`:
 
 ```sh
-COMPARATOR_LANDRUN=/path/to/comparator/scripts/fake-landrun.sh scripts/check_comparator.sh 1
+COMPARATOR_LANDRUN=/path/to/comparator/scripts/fake-landrun.sh just comparator 1
 ```
 
 This exercises Comparator's matching and kernel checks but runs the solution
